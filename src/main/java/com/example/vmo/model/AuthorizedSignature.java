@@ -33,7 +33,7 @@ public class AuthorizedSignature {
     private String contactNumber;
 
     @Lob
-    @Column(name = "digital_signature")
+    @Column(name = "digital_signature", columnDefinition = "MEDIUMBLOB")
     private byte[] digitalSignature;
 
     @Column(name = "created_date", nullable = false)

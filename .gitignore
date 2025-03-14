@@ -125,3 +125,75 @@ $RECYCLE.BIN/
 *.tmp
 *.swp
 *~ s
+
+### Additional IDE and Editor Files ###
+.history/
+.idea_modules/
+*.sublime-workspace
+*.sublime-project
+.atom/
+.brackets.json
+
+### Environment Files ###
+.env
+.env.local
+.env.*
+!.env.example
+.env.development.local
+.env.test.local
+.env.production.local
+
+### Coverage and Reports ###
+coverage/
+.coverage
+htmlcov/
+.nyc_output/
+junit.xml
+reports/
+
+### Node (if using any Node.js tools) ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm/
+
+### Python (if using any Python tools) ###
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.python-version
+*.so
+.pytest_cache/
+.tox/
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+
+### Gradle ###
+.gradle/
+**/build/
+!src/**/build/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+### Docker ###
+*.env
+.docker/
+docker-compose.override.yml
+
+### Misc ###
+*.bak
+*.orig
+*.patch
+*.diff
+.metals/
+.bloop/
+.terraform/
+*.tfstate
+*.tfstate.*
