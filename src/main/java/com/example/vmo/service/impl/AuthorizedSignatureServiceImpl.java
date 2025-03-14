@@ -24,9 +24,24 @@ public class AuthorizedSignatureServiceImpl implements AuthorizedSignatureServic
     @Transactional
     public AuthorizedSignatureResponse createAuthorizedSignature(AuthorizedSignatureRequest request)
             throws IOException {
-        // Check if email already exists
+
+        if (request.getFirstName() == null || request.getFirstName().isEmpty()) {
+            throw new IllegalArgumentException("First name is required");
+        }
+        if (request.getLastName() == null || request.getLastName().isEmpty()) {
+            throw new IllegalArgumentException("Last name is required");
+        }
+        if (request.getEmail() == null || request.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (request.getContactNumber() == null || request.getContactNumber().isEmpty()) {
+            throw new IllegalArgumentException("Contact number is required");
+        }
         if (authorizedSignatureRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already exists: " + request.getEmail());
+        }
+        if (request.getDigitalSignature() == null || request.getDigitalSignature().isEmpty()) {
+            throw new IllegalArgumentException("Digital signature is required");
         }
 
         AuthorizedSignature signature = new AuthorizedSignature();
@@ -53,6 +68,18 @@ public class AuthorizedSignatureServiceImpl implements AuthorizedSignatureServic
         AuthorizedSignature signature = authorizedSignatureRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Authorized Signature not found with id: " + id));
 
+        if (request.getFirstName() == null || request.getFirstName().isEmpty()) {
+            throw new IllegalArgumentException("First name is required");
+        }
+        if (request.getLastName() == null || request.getLastName().isEmpty()) {
+            throw new IllegalArgumentException("Last name is required");
+        }
+        if (request.getEmail() == null || request.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (request.getContactNumber() == null || request.getContactNumber().isEmpty()) {
+            throw new IllegalArgumentException("Contact number is required");
+        }
         // Check if email already exists for another signature
         if (!signature.getEmail().equals(request.getEmail()) &&
                 authorizedSignatureRepository.existsByEmailAndIdNot(request.getEmail(), id)) {
@@ -126,8 +153,9 @@ public class AuthorizedSignatureServiceImpl implements AuthorizedSignatureServic
         response.setHasDigitalSignature(
                 signature.getDigitalSignature() != null && signature.getDigitalSignature().length > 0);
         response.setStatus(signature.isStatus());
-        response.setCreatedAt(signature.getCreatedAt());
-        response.setUpdatedAt(signature.getUpdatedAt());
+        response.setCreatedDate(signature.getCreatedDate());
+        response.setUpdatedDate(signature.getUpdatedDate());
+
         return response;
     }
 }

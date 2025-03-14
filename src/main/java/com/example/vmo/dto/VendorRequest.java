@@ -4,20 +4,18 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthorizedSignatureResponse {
-    private Long id;
+public class VendorRequest {
+    private String employeeIdentificationNumber;
     private String firstName;
     private String middleName;
     private String lastName;
     private String email;
     private String contactNumber;
-    private boolean hasDigitalSignature;
-    private boolean status;
-    private LocalDateTime createdDate;
-    private LocalDateTime updatedDate;
+    private String companyName;
+    private String location;
+    private float rating;
+    private float commission;
 }

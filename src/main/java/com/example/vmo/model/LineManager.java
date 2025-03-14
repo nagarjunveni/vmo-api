@@ -1,5 +1,6 @@
 package com.example.vmo.model;
 
+import com.example.vmo.enums.LineManagerType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,15 +8,22 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "authorized_signature")
+@Table(name = "line_manager")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthorizedSignature {
+public class LineManager {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private LineManagerType type;
+
+    @Column(name = "department", nullable = false)
+    private String department;
 
     @Column(name = "first_name", nullable = false)
     private String firstName;
@@ -31,10 +39,6 @@ public class AuthorizedSignature {
 
     @Column(name = "contact_number", nullable = false)
     private String contactNumber;
-
-    @Lob
-    @Column(name = "digital_signature")
-    private byte[] digitalSignature;
 
     @Column(name = "created_date", nullable = false)
     private LocalDateTime createdDate;
