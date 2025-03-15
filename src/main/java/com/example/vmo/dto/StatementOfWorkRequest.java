@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -31,4 +32,6 @@ public class StatementOfWorkRequest {
     private Long csxEscalationManagerId;
     private Long compnovaEscalationManagerId;
     private Long authorizedSignatureId;
+
+    private List<StatementOfWorkPositionRequest> positions;
 }

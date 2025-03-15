@@ -1,14 +1,15 @@
 package com.example.vmo.service.impl;
 
-import com.example.vmo.dto.AuthorizedSignatureResponse;
-import com.example.vmo.dto.LineManagerResponse;
-import com.example.vmo.dto.StatementOfWorkRequest;
-import com.example.vmo.dto.StatementOfWorkResponse;
+import com.example.vmo.dto.*;
+import com.example.vmo.enums.PositionType;
 import com.example.vmo.model.AuthorizedSignature;
 import com.example.vmo.model.LineManager;
 import com.example.vmo.model.StatementOfWork;
+import com.example.vmo.model.StatementOfWorkPosition;
 import com.example.vmo.repository.AuthorizedSignatureRepository;
 import com.example.vmo.repository.LineManagerRepository;
+import com.example.vmo.repository.PositionRepository;
+import com.example.vmo.repository.StatementOfWorkPositionRepository;
 import com.example.vmo.repository.StatementOfWorkRepository;
 import com.example.vmo.service.AuthorizedSignatureService;
 import com.example.vmo.service.LineManagerService;
@@ -18,7 +19,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +33,8 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
     private final AuthorizedSignatureRepository authorizedSignatureRepository;
     private final LineManagerService lineManagerService;
     private final AuthorizedSignatureService authorizedSignatureService;
+    private final StatementOfWorkPositionRepository sowPositionRepository;
+    private final PositionRepository positionRepository;
 
     @Override
     @Transactional
@@ -59,47 +64,34 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
         statementOfWork.setAuthorizedSignature(authorizedSignature);
         statementOfWork.setStatus(true);
 
+        // Save the statement of work
         StatementOfWork savedStatementOfWork = statementOfWorkRepository.save(statementOfWork);
-        return mapToResponse(savedStatementOfWork);
+
+        // Create positions if provided
+        List<StatementOfWorkPositionResponse> positionResponses = new ArrayList<>();
+        if (request.getPositions() != null && !request.getPositions().isEmpty()) {
+            positionResponses = createOrUpdatePositions(savedStatementOfWork.getId(), request.getPositions());
+        }
+
+        // Map to response
+        StatementOfWorkResponse response = mapToResponse(savedStatementOfWork);
+        response.setPositions(positionResponses);
+
+        // Calculate position counts
+        updatePositionCounts(response);
+
+        return response;
     }
 
     @Override
     @Transactional
     public StatementOfWorkResponse updateStatementOfWork(Long id, StatementOfWorkRequest request) {
-        // Validate required fields
-        validateRequest(request);
-
-        // Get existing statement of work
+        // Find the statement of work
         StatementOfWork statementOfWork = statementOfWorkRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Statement of Work not found with id: " + id));
 
-        // Get related entities if they've changed
-        if (request.getLineManagerId() != null
-                && !request.getLineManagerId().equals(statementOfWork.getLineManager().getId())) {
-            LineManager lineManager = getLineManager(request.getLineManagerId());
-            statementOfWork.setLineManager(lineManager);
-        }
-
-        if (request.getCsxEscalationManagerId() != null
-                && !request.getCsxEscalationManagerId().equals(statementOfWork.getCsxEscalationManager().getId())) {
-            LineManager csxEscalationManager = getLineManager(request.getCsxEscalationManagerId());
-            statementOfWork.setCsxEscalationManager(csxEscalationManager);
-        }
-
-        if (request.getCompnovaEscalationManagerId() != null && !request.getCompnovaEscalationManagerId()
-                .equals(statementOfWork.getCompnovaEscalationManager().getId())) {
-            LineManager compnovaEscalationManager = getLineManager(request.getCompnovaEscalationManagerId());
-            statementOfWork.setCompnovaEscalationManager(compnovaEscalationManager);
-        }
-
-        if (request.getAuthorizedSignatureId() != null
-                && !request.getAuthorizedSignatureId().equals(statementOfWork.getAuthorizedSignature().getId())) {
-            AuthorizedSignature authorizedSignature = getAuthorizedSignature(request.getAuthorizedSignatureId());
-            statementOfWork.setAuthorizedSignature(authorizedSignature);
-        }
-
-        // Update fields
-        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+        // Update fields if provided
+        if (request.getName() != null) {
             statementOfWork.setName(request.getName());
         }
 
@@ -127,8 +119,46 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
             statementOfWork.setProjectState(request.getProjectState());
         }
 
+        if (request.getLineManagerId() != null) {
+            LineManager lineManager = getLineManager(request.getLineManagerId());
+            statementOfWork.setLineManager(lineManager);
+        }
+
+        if (request.getCsxEscalationManagerId() != null) {
+            LineManager csxEscalationManager = getLineManager(request.getCsxEscalationManagerId());
+            statementOfWork.setCsxEscalationManager(csxEscalationManager);
+        }
+
+        if (request.getCompnovaEscalationManagerId() != null) {
+            LineManager compnovaEscalationManager = getLineManager(request.getCompnovaEscalationManagerId());
+            statementOfWork.setCompnovaEscalationManager(compnovaEscalationManager);
+        }
+
+        if (request.getAuthorizedSignatureId() != null) {
+            AuthorizedSignature authorizedSignature = getAuthorizedSignature(request.getAuthorizedSignatureId());
+            statementOfWork.setAuthorizedSignature(authorizedSignature);
+        }
+
+        // Save the updated statement of work
         StatementOfWork updatedStatementOfWork = statementOfWorkRepository.save(statementOfWork);
-        return mapToResponse(updatedStatementOfWork);
+
+        // Update positions if provided
+        List<StatementOfWorkPositionResponse> positionResponses = new ArrayList<>();
+        if (request.getPositions() != null) {
+            positionResponses = createOrUpdatePositions(updatedStatementOfWork.getId(), request.getPositions());
+        } else {
+            // If no positions provided, get existing positions
+            positionResponses = getPositionsForStatementOfWork(updatedStatementOfWork.getId());
+        }
+
+        // Map to response
+        StatementOfWorkResponse response = mapToResponse(updatedStatementOfWork);
+        response.setPositions(positionResponses);
+
+        // Calculate position counts
+        updatePositionCounts(response);
+
+        return response;
     }
 
     @Override
@@ -136,31 +166,79 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
     public StatementOfWorkResponse getStatementOfWorkById(Long id) {
         StatementOfWork statementOfWork = statementOfWorkRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Statement of Work not found with id: " + id));
-        return mapToResponse(statementOfWork);
+
+        StatementOfWorkResponse response = mapToResponse(statementOfWork);
+
+        // Get positions for this SOW
+        List<StatementOfWorkPositionResponse> positions = getPositionsForStatementOfWork(id);
+        response.setPositions(positions);
+
+        // Calculate position counts
+        updatePositionCounts(response);
+
+        return response;
     }
 
     @Override
     @Transactional(readOnly = true)
     public StatementOfWorkResponse getStatementOfWorkByCustomId(String statementOfWorkId) {
         StatementOfWork statementOfWork = statementOfWorkRepository.findByStatementOfWorkId(statementOfWorkId)
-                .orElseThrow(
-                        () -> new EntityNotFoundException("Statement of Work not found with ID: " + statementOfWorkId));
-        return mapToResponse(statementOfWork);
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Statement of Work not found with custom id: " + statementOfWorkId));
+
+        StatementOfWorkResponse response = mapToResponse(statementOfWork);
+
+        // Get positions for this SOW
+        List<StatementOfWorkPositionResponse> positions = getPositionsForStatementOfWork(statementOfWork.getId());
+        response.setPositions(positions);
+
+        // Calculate position counts
+        updatePositionCounts(response);
+
+        return response;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<StatementOfWorkResponse> getStatementOfWorksByName(String name) {
-        return statementOfWorkRepository.findByNameContainingAndStatusTrue(name).stream()
-                .map(this::mapToResponse)
+        List<StatementOfWork> statementOfWorks = statementOfWorkRepository.findByNameContainingAndStatusTrue(name);
+
+        return statementOfWorks.stream()
+                .map(sow -> {
+                    StatementOfWorkResponse response = mapToResponse(sow);
+
+                    // Calculate position counts
+                    Map<PositionType, Long> counts = sowPositionRepository.findBySowIdAndStatusTrue(sow.getId())
+                            .stream()
+                            .collect(Collectors.groupingBy(StatementOfWorkPosition::getType, Collectors.counting()));
+
+                    response.setOnsiteCount((int) counts.getOrDefault(PositionType.Onsite, 0L).longValue());
+                    response.setOffshoreCount((int) counts.getOrDefault(PositionType.Offshore, 0L).longValue());
+
+                    return response;
+                })
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<StatementOfWorkResponse> getAllActiveStatementOfWorks() {
-        return statementOfWorkRepository.findByStatusTrue().stream()
-                .map(this::mapToResponse)
+        List<StatementOfWork> statementOfWorks = statementOfWorkRepository.findByStatusTrue();
+
+        return statementOfWorks.stream()
+                .map(sow -> {
+                    StatementOfWorkResponse response = mapToResponse(sow);
+
+                    // Calculate position counts
+                    Map<PositionType, Long> counts = sowPositionRepository.findBySowIdAndStatusTrue(sow.getId())
+                            .stream()
+                            .collect(Collectors.groupingBy(StatementOfWorkPosition::getType, Collectors.counting()));
+
+                    response.setOnsiteCount((int) counts.getOrDefault(PositionType.Onsite, 0L).longValue());
+                    response.setOffshoreCount((int) counts.getOrDefault(PositionType.Offshore, 0L).longValue());
+
+                    return response;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -169,83 +247,101 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
     public void deleteStatementOfWork(Long id) {
         StatementOfWork statementOfWork = statementOfWorkRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Statement of Work not found with id: " + id));
+
         statementOfWork.setStatus(false);
         statementOfWorkRepository.save(statementOfWork);
+
+        // Also soft delete all associated positions
+        List<StatementOfWorkPosition> positions = sowPositionRepository.findBySowIdAndStatusTrue(id);
+        positions.forEach(position -> {
+            position.setStatus(false);
+            sowPositionRepository.save(position);
+        });
     }
 
     @Override
     public String generateStatementOfWorkId(int year) {
-        String prefix = "SOW-" + year + "-";
-        Integer highestSequence = statementOfWorkRepository.findHighestSequenceNumberForYear(prefix);
+        // Get the count of SOWs for the given year
+        int count = statementOfWorkRepository.countByStatementOfWorkIdStartingWith("SOW-" + year);
 
-        int nextSequence = (highestSequence == null) ? 1 : highestSequence + 1;
-        return prefix + String.format("%03d", nextSequence);
+        // Format: SOW-YYYY-XXX where XXX is a sequential number starting from 001
+        return String.format("SOW-%d-%03d", year, count + 1);
     }
 
-    /**
-     * Validate the request data
-     */
     private void validateRequest(StatementOfWorkRequest request) {
         if (request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Name is required");
+            throw new IllegalArgumentException("Statement of Work name is required");
+        }
+
+        if (request.getDescription() == null || request.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException("Statement of Work description is required");
         }
 
         if (request.getStartDate() == null) {
-            throw new IllegalArgumentException("Start date is required");
+            throw new IllegalArgumentException("Statement of Work start date is required");
         }
 
         if (request.getEndDate() == null) {
-            throw new IllegalArgumentException("End date is required");
+            throw new IllegalArgumentException("Statement of Work end date is required");
         }
 
-        if (request.getEndDate().isBefore(request.getStartDate())) {
-            throw new IllegalArgumentException("End date cannot be before start date");
+        if (request.getStartDate().isAfter(request.getEndDate())) {
+            throw new IllegalArgumentException("Start date cannot be after end date");
         }
 
         if (request.getType() == null) {
-            throw new IllegalArgumentException("Type is required");
+            throw new IllegalArgumentException("Statement of Work type is required");
         }
 
         if (request.getProjectState() == null) {
-            throw new IllegalArgumentException("Project state is required");
+            throw new IllegalArgumentException("Statement of Work project state is required");
         }
 
         if (request.getLineManagerId() == null) {
-            throw new IllegalArgumentException("Line manager is required");
+            throw new IllegalArgumentException("Line Manager ID is required");
         }
 
         if (request.getCsxEscalationManagerId() == null) {
-            throw new IllegalArgumentException("CSX escalation manager is required");
+            throw new IllegalArgumentException("CSX Escalation Manager ID is required");
         }
 
         if (request.getCompnovaEscalationManagerId() == null) {
-            throw new IllegalArgumentException("Compnova escalation manager is required");
+            throw new IllegalArgumentException("Compnova Escalation Manager ID is required");
         }
 
         if (request.getAuthorizedSignatureId() == null) {
-            throw new IllegalArgumentException("Authorized signature is required");
+            throw new IllegalArgumentException("Authorized Signature ID is required");
+        }
+
+        // Validate positions if provided
+        if (request.getPositions() != null) {
+            for (StatementOfWorkPositionRequest position : request.getPositions()) {
+                if (position.getPositionId() == null) {
+                    throw new IllegalArgumentException("Position ID is required for all positions");
+                }
+
+                if (position.getType() == null) {
+                    throw new IllegalArgumentException("Position type is required for all positions");
+                }
+
+                // Validate that the position exists
+                if (!positionRepository.existsById(position.getPositionId())) {
+                    throw new EntityNotFoundException("Position not found with id: " + position.getPositionId());
+                }
+            }
         }
     }
 
-    /**
-     * Get line manager by ID
-     */
     private LineManager getLineManager(Long id) {
         return lineManagerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Line Manager not found with id: " + id));
     }
 
-    /**
-     * Get authorized signature by ID
-     */
     private AuthorizedSignature getAuthorizedSignature(Long id) {
         return authorizedSignatureRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Authorized Signature not found with id: " + id));
     }
 
-    /**
-     * Map entity to response DTO
-     */
     private StatementOfWorkResponse mapToResponse(StatementOfWork statementOfWork) {
         StatementOfWorkResponse response = new StatementOfWorkResponse();
         response.setId(statementOfWork.getId());
@@ -259,25 +355,110 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
         response.setFixedBidAmount(statementOfWork.getFixedBidAmount());
         response.setProjectState(statementOfWork.getProjectState());
         response.setProjectStateDisplayName(statementOfWork.getProjectState().getDisplayName());
-
-        // Map related entities
-        LineManagerResponse lineManagerResponse = lineManagerService
-                .getLineManagerById(statementOfWork.getLineManager().getId());
-        response.setLineManager(lineManagerResponse);
-
-        LineManagerResponse csxEscalationManagerResponse = lineManagerService
-                .getLineManagerById(statementOfWork.getCsxEscalationManager().getId());
-        response.setCsxEscalationManager(csxEscalationManagerResponse);
-
-        LineManagerResponse compnovaEscalationManagerResponse = lineManagerService
-                .getLineManagerById(statementOfWork.getCompnovaEscalationManager().getId());
-        response.setCompnovaEscalationManager(compnovaEscalationManagerResponse);
-
-        AuthorizedSignatureResponse authorizedSignatureResponse = authorizedSignatureService
-                .getAuthorizedSignatureById(statementOfWork.getAuthorizedSignature().getId());
-        response.setAuthorizedSignature(authorizedSignatureResponse);
-
         response.setStatus(statementOfWork.isStatus());
+
+        // Get related entities
+        LineManagerResponse lineManager = lineManagerService
+                .getLineManagerById(statementOfWork.getLineManager().getId());
+        LineManagerResponse csxEscalationManager = lineManagerService
+                .getLineManagerById(statementOfWork.getCsxEscalationManager().getId());
+        LineManagerResponse compnovaEscalationManager = lineManagerService
+                .getLineManagerById(statementOfWork.getCompnovaEscalationManager().getId());
+        AuthorizedSignatureResponse authorizedSignature = authorizedSignatureService
+                .getAuthorizedSignatureById(statementOfWork.getAuthorizedSignature().getId());
+
+        response.setLineManager(lineManager);
+        response.setCsxEscalationManager(csxEscalationManager);
+        response.setCompnovaEscalationManager(compnovaEscalationManager);
+        response.setAuthorizedSignature(authorizedSignature);
+
         return response;
+    }
+
+    private List<StatementOfWorkPositionResponse> createOrUpdatePositions(Long sowId,
+            List<StatementOfWorkPositionRequest> positionRequests) {
+        List<StatementOfWorkPositionResponse> responses = new ArrayList<>();
+
+        for (StatementOfWorkPositionRequest request : positionRequests) {
+            StatementOfWorkPosition position;
+
+            // If id is 0 or null, create a new position
+            if (request.getId() == null || request.getId() == 0) {
+                position = new StatementOfWorkPosition();
+                position.setSowId(sowId);
+                position.setPositionId(request.getPositionId());
+                position.setType(request.getType());
+                position.setStatus(request.getStatus() != null ? request.getStatus() : true);
+            } else {
+                // Otherwise, update existing position
+                position = sowPositionRepository.findById(request.getId())
+                        .orElseThrow(() -> new EntityNotFoundException(
+                                "StatementOfWorkPosition not found with id: " + request.getId()));
+
+                // Only update if the position belongs to this SOW
+                if (!position.getSowId().equals(sowId)) {
+                    throw new IllegalArgumentException("Position with id " + request.getId()
+                            + " does not belong to Statement of Work with id " + sowId);
+                }
+
+                if (request.getPositionId() != null) {
+                    position.setPositionId(request.getPositionId());
+                }
+
+                if (request.getType() != null) {
+                    position.setType(request.getType());
+                }
+
+                if (request.getStatus() != null) {
+                    position.setStatus(request.getStatus());
+                }
+            }
+
+            // Save the position
+            StatementOfWorkPosition savedPosition = sowPositionRepository.save(position);
+
+            // Map to response
+            StatementOfWorkPositionResponse response = new StatementOfWorkPositionResponse();
+            response.setId(savedPosition.getId());
+            response.setSowId(savedPosition.getSowId());
+            response.setPositionId(savedPosition.getPositionId());
+            response.setType(savedPosition.getType());
+            response.setStatus(savedPosition.isStatus());
+
+            responses.add(response);
+        }
+
+        return responses;
+    }
+
+    private List<StatementOfWorkPositionResponse> getPositionsForStatementOfWork(Long sowId) {
+        List<StatementOfWorkPosition> positions = sowPositionRepository.findBySowIdAndStatusTrue(sowId);
+
+        return positions.stream()
+                .map(position -> {
+                    StatementOfWorkPositionResponse response = new StatementOfWorkPositionResponse();
+                    response.setId(position.getId());
+                    response.setSowId(position.getSowId());
+                    response.setPositionId(position.getPositionId());
+                    response.setType(position.getType());
+                    response.setStatus(position.isStatus());
+                    return response;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private void updatePositionCounts(StatementOfWorkResponse response) {
+        if (response.getPositions() != null) {
+            response.setOnsiteCount((int) response.getPositions().stream()
+                    .filter(p -> p.getType() == PositionType.Onsite && p.isStatus())
+                    .count());
+
+            response.setOffshoreCount((int) response.getPositions().stream()
+                    .filter(p -> p.getType() == PositionType.Offshore && p.isStatus())
+                    .count());
+        } else {
+            response.setOnsiteCount(0);
+            response.setOffshoreCount(0);
+        }
     }
 }

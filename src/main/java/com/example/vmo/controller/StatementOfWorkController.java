@@ -18,7 +18,7 @@ public class StatementOfWorkController {
     private final StatementOfWorkService statementOfWorkService;
 
     /**
-     * Create a new statement of work
+     * Create a new statement of work with positions
      */
     @PostMapping
     public ResponseEntity<StatementOfWorkResponse> createStatementOfWork(@RequestBody StatementOfWorkRequest request) {
@@ -27,7 +27,7 @@ public class StatementOfWorkController {
     }
 
     /**
-     * Update an existing statement of work
+     * Update an existing statement of work with positions
      */
     @PutMapping("/{id}")
     public ResponseEntity<StatementOfWorkResponse> updateStatementOfWork(
@@ -38,7 +38,7 @@ public class StatementOfWorkController {
     }
 
     /**
-     * Get a statement of work by ID
+     * Get a statement of work by ID with positions
      */
     @GetMapping("/{id}")
     public ResponseEntity<StatementOfWorkResponse> getStatementOfWorkById(@PathVariable Long id) {
@@ -66,7 +66,7 @@ public class StatementOfWorkController {
     }
 
     /**
-     * Get all active statements of work
+     * Get all active statements of work with onsite and offshore counts
      */
     @GetMapping
     public ResponseEntity<List<StatementOfWorkResponse>> getAllActiveStatementOfWorks() {

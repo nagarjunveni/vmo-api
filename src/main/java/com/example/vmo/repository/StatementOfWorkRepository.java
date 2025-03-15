@@ -43,4 +43,12 @@ public interface StatementOfWorkRepository extends JpaRepository<StatementOfWork
      */
     @Query("SELECT MAX(CAST(SUBSTRING(s.statementOfWorkId, 9) AS int)) FROM StatementOfWork s WHERE s.statementOfWorkId LIKE :prefix%")
     Integer findHighestSequenceNumberForYear(@Param("prefix") String prefix);
+
+    /**
+     * Count statements of work by custom ID starting with the given prefix
+     * 
+     * @param prefix The prefix to search for
+     * @return The count of statements of work with the given prefix
+     */
+    int countByStatementOfWorkIdStartingWith(String prefix);
 }

@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StatementOfWorkPositionRequest {
+    private Long id;
     private Long sowId;
     private Long positionId;
     private PositionType type;

@@ -8,27 +8,27 @@ import java.util.List;
 public interface StatementOfWorkService {
 
     /**
-     * Create a new statement of work
+     * Create a new statement of work with positions
      * 
-     * @param request The statement of work request data
-     * @return The created statement of work response
+     * @param request The statement of work request data with positions
+     * @return The created statement of work response with positions
      */
     StatementOfWorkResponse createStatementOfWork(StatementOfWorkRequest request);
 
     /**
-     * Update an existing statement of work
+     * Update an existing statement of work with positions
      * 
      * @param id      The id of the statement of work to update
-     * @param request The updated statement of work data
-     * @return The updated statement of work response
+     * @param request The updated statement of work data with positions
+     * @return The updated statement of work response with positions
      */
     StatementOfWorkResponse updateStatementOfWork(Long id, StatementOfWorkRequest request);
 
     /**
-     * Get a statement of work by id
+     * Get a statement of work by id with positions
      * 
      * @param id The id of the statement of work to retrieve
-     * @return The statement of work response
+     * @return The statement of work response with positions
      */
     StatementOfWorkResponse getStatementOfWorkById(Long id);
 
@@ -49,9 +49,9 @@ public interface StatementOfWorkService {
     List<StatementOfWorkResponse> getStatementOfWorksByName(String name);
 
     /**
-     * Get all active statements of work
+     * Get all active statements of work with onsite and offshore counts
      * 
-     * @return List of active statement of work responses
+     * @return List of active statement of work responses with position counts
      */
     List<StatementOfWorkResponse> getAllActiveStatementOfWorks();
 
