@@ -32,8 +32,8 @@ public class StatementOfWorkResponse {
     private String projectStateDisplayName;
 
     private LineManagerResponse lineManager;
-    private LineManagerResponse escalationManager;
-    private LineManagerResponse vendorEscalationManager;
+    private LineManagerResponse csxEscalationManager;
+    private LineManagerResponse compnovaEscalationManager;
     private AuthorizedSignatureResponse authorizedSignature;
 
     private boolean status;

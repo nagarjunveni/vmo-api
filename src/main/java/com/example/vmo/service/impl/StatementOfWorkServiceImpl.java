@@ -39,8 +39,8 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
 
         // Get related entities
         LineManager lineManager = getLineManager(request.getLineManagerId());
-        LineManager escalationManager = getLineManager(request.getEscalationManagerId());
-        LineManager vendorEscalationManager = getLineManager(request.getVendorEscalationManagerId());
+        LineManager csxEscalationManager = getLineManager(request.getCsxEscalationManagerId());
+        LineManager compnovaEscalationManager = getLineManager(request.getCompnovaEscalationManagerId());
         AuthorizedSignature authorizedSignature = getAuthorizedSignature(request.getAuthorizedSignatureId());
 
         // Create new statement of work
@@ -54,8 +54,8 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
         statementOfWork.setFixedBidAmount(request.getFixedBidAmount());
         statementOfWork.setProjectState(request.getProjectState());
         statementOfWork.setLineManager(lineManager);
-        statementOfWork.setEscalationManager(escalationManager);
-        statementOfWork.setVendorEscalationManager(vendorEscalationManager);
+        statementOfWork.setCsxEscalationManager(csxEscalationManager);
+        statementOfWork.setCompnovaEscalationManager(compnovaEscalationManager);
         statementOfWork.setAuthorizedSignature(authorizedSignature);
         statementOfWork.setStatus(true);
 
@@ -80,16 +80,16 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
             statementOfWork.setLineManager(lineManager);
         }
 
-        if (request.getEscalationManagerId() != null
-                && !request.getEscalationManagerId().equals(statementOfWork.getEscalationManager().getId())) {
-            LineManager escalationManager = getLineManager(request.getEscalationManagerId());
-            statementOfWork.setEscalationManager(escalationManager);
+        if (request.getCsxEscalationManagerId() != null
+                && !request.getCsxEscalationManagerId().equals(statementOfWork.getCsxEscalationManager().getId())) {
+            LineManager csxEscalationManager = getLineManager(request.getCsxEscalationManagerId());
+            statementOfWork.setCsxEscalationManager(csxEscalationManager);
         }
 
-        if (request.getVendorEscalationManagerId() != null && !request.getVendorEscalationManagerId()
-                .equals(statementOfWork.getVendorEscalationManager().getId())) {
-            LineManager vendorEscalationManager = getLineManager(request.getVendorEscalationManagerId());
-            statementOfWork.setVendorEscalationManager(vendorEscalationManager);
+        if (request.getCompnovaEscalationManagerId() != null && !request.getCompnovaEscalationManagerId()
+                .equals(statementOfWork.getCompnovaEscalationManager().getId())) {
+            LineManager compnovaEscalationManager = getLineManager(request.getCompnovaEscalationManagerId());
+            statementOfWork.setCompnovaEscalationManager(compnovaEscalationManager);
         }
 
         if (request.getAuthorizedSignatureId() != null
@@ -214,12 +214,12 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
             throw new IllegalArgumentException("Line manager is required");
         }
 
-        if (request.getEscalationManagerId() == null) {
-            throw new IllegalArgumentException("Escalation manager is required");
+        if (request.getCsxEscalationManagerId() == null) {
+            throw new IllegalArgumentException("CSX escalation manager is required");
         }
 
-        if (request.getVendorEscalationManagerId() == null) {
-            throw new IllegalArgumentException("Vendor escalation manager is required");
+        if (request.getCompnovaEscalationManagerId() == null) {
+            throw new IllegalArgumentException("Compnova escalation manager is required");
         }
 
         if (request.getAuthorizedSignatureId() == null) {
@@ -265,13 +265,13 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
                 .getLineManagerById(statementOfWork.getLineManager().getId());
         response.setLineManager(lineManagerResponse);
 
-        LineManagerResponse escalationManagerResponse = lineManagerService
-                .getLineManagerById(statementOfWork.getEscalationManager().getId());
-        response.setEscalationManager(escalationManagerResponse);
+        LineManagerResponse csxEscalationManagerResponse = lineManagerService
+                .getLineManagerById(statementOfWork.getCsxEscalationManager().getId());
+        response.setCsxEscalationManager(csxEscalationManagerResponse);
 
-        LineManagerResponse vendorEscalationManagerResponse = lineManagerService
-                .getLineManagerById(statementOfWork.getVendorEscalationManager().getId());
-        response.setVendorEscalationManager(vendorEscalationManagerResponse);
+        LineManagerResponse compnovaEscalationManagerResponse = lineManagerService
+                .getLineManagerById(statementOfWork.getCompnovaEscalationManager().getId());
+        response.setCompnovaEscalationManager(compnovaEscalationManagerResponse);
 
         AuthorizedSignatureResponse authorizedSignatureResponse = authorizedSignatureService
                 .getAuthorizedSignatureById(statementOfWork.getAuthorizedSignature().getId());

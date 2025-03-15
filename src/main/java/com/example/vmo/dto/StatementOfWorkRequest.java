@@ -28,7 +28,7 @@ public class StatementOfWorkRequest {
     private ProjectState projectState;
 
     private Long lineManagerId;
-    private Long escalationManagerId;
-    private Long vendorEscalationManagerId;
+    private Long csxEscalationManagerId;
+    private Long compnovaEscalationManagerId;
     private Long authorizedSignatureId;
 }

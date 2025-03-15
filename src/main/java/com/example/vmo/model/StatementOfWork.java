@@ -54,12 +54,12 @@ public class StatementOfWork {
     private LineManager lineManager;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "escalation_manager_id", nullable = false)
-    private LineManager escalationManager;
+    @JoinColumn(name = "csx_escalation_manager_id", nullable = false)
+    private LineManager csxEscalationManager;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vendor_escalation_manager_id", nullable = false)
-    private LineManager vendorEscalationManager;
+    @JoinColumn(name = "compnova_escalation_manager_id", nullable = false)
+    private LineManager compnovaEscalationManager;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "authorized_signature_id", nullable = false)
