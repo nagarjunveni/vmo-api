@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "statement_of_work_positions")
 @Data
@@ -30,6 +32,12 @@ public class StatementOfWorkPosition {
     @Column(name = "status", nullable = false)
     private boolean status = true;
 
+    @Column(name = "created_date", nullable = true)
+    private LocalDateTime createdDate;
+
+    @Column(name = "updated_date", nullable = true)
+    private LocalDateTime updatedDate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sow_id", referencedColumnName = "id", insertable = false, updatable = false)
     private StatementOfWork statementOfWork;
@@ -37,4 +45,15 @@ public class StatementOfWorkPosition {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "position_id", referencedColumnName = "id", insertable = false, updatable = false)
     private Position position;
+
+    @PrePersist
+    protected void onCreate() {
+        createdDate = LocalDateTime.now();
+        updatedDate = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedDate = LocalDateTime.now();
+    }
 }

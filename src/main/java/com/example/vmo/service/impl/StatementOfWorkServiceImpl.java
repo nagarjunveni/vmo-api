@@ -425,6 +425,24 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
             response.setType(savedPosition.getType());
             response.setStatus(savedPosition.isStatus());
 
+            // Fetch and set the position details
+            positionRepository.findById(savedPosition.getPositionId())
+                    .ifPresent(pos -> {
+                        PositionResponse positionResponse = new PositionResponse(
+                                pos.getId(),
+                                pos.getTitle(),
+                                pos.getDescription(),
+                                pos.getAmount(),
+                                pos.getHourlyRate(),
+                                pos.getMonthlyRate(),
+                                pos.getSkills(),
+                                pos.getExpertise(),
+                                pos.getCreatedDate(),
+                                pos.getUpdatedDate(),
+                                pos.isStatus());
+                        response.setPosition(positionResponse);
+                    });
+
             responses.add(response);
         }
 
@@ -442,6 +460,25 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
                     response.setPositionId(position.getPositionId());
                     response.setType(position.getType());
                     response.setStatus(position.isStatus());
+
+                    // Fetch and set the position details
+                    positionRepository.findById(position.getPositionId())
+                            .ifPresent(pos -> {
+                                PositionResponse positionResponse = new PositionResponse(
+                                        pos.getId(),
+                                        pos.getTitle(),
+                                        pos.getDescription(),
+                                        pos.getAmount(),
+                                        pos.getHourlyRate(),
+                                        pos.getMonthlyRate(),
+                                        pos.getSkills(),
+                                        pos.getExpertise(),
+                                        pos.getCreatedDate(),
+                                        pos.getUpdatedDate(),
+                                        pos.isStatus());
+                                response.setPosition(positionResponse);
+                            });
+
                     return response;
                 })
                 .collect(Collectors.toList());

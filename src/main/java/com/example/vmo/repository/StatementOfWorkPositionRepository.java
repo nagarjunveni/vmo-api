@@ -10,9 +10,9 @@ import java.util.List;
 public interface StatementOfWorkPositionRepository extends JpaRepository<StatementOfWorkPosition, Long> {
 
     /**
-     * Find all StatementOfWorkPositions where status is true
+     * Find all statement of work position records where status is true
      * 
-     * @return List of active StatementOfWorkPositions
+     * @return List of active statement of work position records
      */
     List<StatementOfWorkPosition> findByStatusTrue();
 
