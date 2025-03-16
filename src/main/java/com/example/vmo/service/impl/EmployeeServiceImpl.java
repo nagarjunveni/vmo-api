@@ -130,10 +130,6 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new IllegalArgumentException("Employee already exists with email: " + request.getEmail());
         }
 
-        if (request.getProfilePicture() == null || request.getProfilePicture().trim().isEmpty()) {
-            throw new IllegalArgumentException("Profile picture is required");
-        }
-
         if (request.getDateOfBirth() == null) {
             throw new IllegalArgumentException("Date of birth is required");
         }

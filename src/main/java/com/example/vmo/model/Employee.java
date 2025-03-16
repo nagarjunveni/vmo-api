@@ -46,7 +46,7 @@ public class Employee {
     private Vendor vendor;
 
     @Lob
-    @Column(name = "profile_picture", nullable = false, columnDefinition = "BLOB")
+    @Column(name = "profile_picture", nullable = true, columnDefinition = "BLOB")
     private byte[] profilePicture;
 
     @Column(name = "date_of_birth", nullable = false)
