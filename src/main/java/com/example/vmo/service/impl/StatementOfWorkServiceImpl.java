@@ -14,6 +14,8 @@ import com.example.vmo.repository.StatementOfWorkRepository;
 import com.example.vmo.service.AuthorizedSignatureService;
 import com.example.vmo.service.LineManagerService;
 import com.example.vmo.service.StatementOfWorkService;
+import com.example.vmo.service.ActivitiesAndDeliverablesService;
+import com.example.vmo.service.MilepostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,8 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
     private final AuthorizedSignatureService authorizedSignatureService;
     private final StatementOfWorkPositionRepository sowPositionRepository;
     private final PositionRepository positionRepository;
+    private final ActivitiesAndDeliverablesService activitiesService;
+    private final MilepostService milepostService;
 
     @Override
     @Transactional
@@ -58,6 +62,9 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
         statementOfWork.setType(request.getType());
         statementOfWork.setFixedBidAmount(request.getFixedBidAmount());
         statementOfWork.setProjectState(request.getProjectState());
+        statementOfWork.setAssumptionsAndDependencies(request.getAssumptionsAndDependencies());
+        statementOfWork.setTeamsAndConditions(request.getTeamsAndConditions());
+        statementOfWork.setProjectScope(request.getProjectScope());
         statementOfWork.setLineManager(lineManager);
         statementOfWork.setCsxEscalationManager(csxEscalationManager);
         statementOfWork.setCompnovaEscalationManager(compnovaEscalationManager);
@@ -71,6 +78,22 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
         List<StatementOfWorkPositionResponse> positionResponses = new ArrayList<>();
         if (request.getPositions() != null && !request.getPositions().isEmpty()) {
             positionResponses = createOrUpdatePositions(savedStatementOfWork.getId(), request.getPositions());
+        }
+
+        // Create activities
+        if (request.getActivities() != null) {
+            for (ActivitiesAndDeliverablesRequest activityRequest : request.getActivities()) {
+                activityRequest.setSowId(savedStatementOfWork.getId());
+                activitiesService.createActivitiesAndDeliverables(activityRequest);
+            }
+        }
+
+        // Create mileposts
+        if (request.getMileposts() != null) {
+            for (MilepostRequest milepostRequest : request.getMileposts()) {
+                milepostRequest.setSowId(savedStatementOfWork.getId());
+                milepostService.createMilepost(milepostRequest);
+            }
         }
 
         // Map to response
@@ -139,6 +162,18 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
             statementOfWork.setAuthorizedSignature(authorizedSignature);
         }
 
+        if (request.getAssumptionsAndDependencies() != null) {
+            statementOfWork.setAssumptionsAndDependencies(request.getAssumptionsAndDependencies());
+        }
+
+        if (request.getTeamsAndConditions() != null) {
+            statementOfWork.setTeamsAndConditions(request.getTeamsAndConditions());
+        }
+
+        if (request.getProjectScope() != null) {
+            statementOfWork.setProjectScope(request.getProjectScope());
+        }
+
         // Save the updated statement of work
         StatementOfWork updatedStatementOfWork = statementOfWorkRepository.save(statementOfWork);
 
@@ -149,6 +184,34 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
         } else {
             // If no positions provided, get existing positions
             positionResponses = getPositionsForStatementOfWork(updatedStatementOfWork.getId());
+        }
+
+        // Update or create activities
+        if (request.getActivities() != null) {
+            for (ActivitiesAndDeliverablesRequest activityRequest : request.getActivities()) {
+                activityRequest.setSowId(updatedStatementOfWork.getId());
+
+                if (activityRequest.getId() != null) {
+                    activitiesService.updateActivitiesAndDeliverables(
+                            activityRequest.getId(), activityRequest);
+                } else {
+                    activitiesService.createActivitiesAndDeliverables(activityRequest);
+                }
+            }
+        }
+
+        // Update or create mileposts
+        if (request.getMileposts() != null) {
+            for (MilepostRequest milepostRequest : request.getMileposts()) {
+                milepostRequest.setSowId(updatedStatementOfWork.getId());
+
+                if (milepostRequest.getId() != null) {
+                    milepostService.updateMilepost(
+                            milepostRequest.getId(), milepostRequest);
+                } else {
+                    milepostService.createMilepost(milepostRequest);
+                }
+            }
         }
 
         // Map to response
@@ -172,6 +235,14 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
         // Get positions for this SOW
         List<StatementOfWorkPositionResponse> positions = getPositionsForStatementOfWork(id);
         response.setPositions(positions);
+
+        // Fetch and set activities
+        response.setActivities(
+                activitiesService.getActivitiesAndDeliverablesBySowId(id));
+
+        // Fetch and set mileposts
+        response.setMileposts(
+                milepostService.getMilepostsBySowId(id));
 
         // Calculate position counts
         updatePositionCounts(response);
@@ -313,6 +384,18 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
             throw new IllegalArgumentException("Authorized Signature ID is required");
         }
 
+        if (request.getAssumptionsAndDependencies() == null) {
+            throw new IllegalArgumentException("Assumption And Dependencies is required");
+        }
+
+        if (request.getProjectScope() == null) {
+            throw new IllegalArgumentException("Project Scope is required");
+        }
+
+        if (request.getTeamsAndConditions() == null) {
+            throw new IllegalArgumentException("Teams And Condition is required");
+        }
+
         // Validate positions if provided
         if (request.getPositions() != null) {
             for (StatementOfWorkPositionRequest position : request.getPositions()) {
@@ -356,6 +439,9 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
         response.setProjectState(statementOfWork.getProjectState());
         response.setProjectStateDisplayName(statementOfWork.getProjectState().getDisplayName());
         response.setStatus(statementOfWork.isStatus());
+        response.setTeamsAndConditions(statementOfWork.getTeamsAndConditions());
+        response.setAssumptionsAndDependencies(statementOfWork.getAssumptionsAndDependencies());
+        response.setProjectScope(statementOfWork.getProjectScope());
 
         // Get related entities
         LineManagerResponse lineManager = lineManagerService
@@ -437,6 +523,7 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
                                 pos.getMonthlyRate(),
                                 pos.getSkills(),
                                 pos.getExpertise(),
+                                pos.getType(),
                                 pos.getCreatedDate(),
                                 pos.getUpdatedDate(),
                                 pos.isStatus());
@@ -473,6 +560,7 @@ public class StatementOfWorkServiceImpl implements StatementOfWorkService {
                                         pos.getMonthlyRate(),
                                         pos.getSkills(),
                                         pos.getExpertise(),
+                                        pos.getType(),
                                         pos.getCreatedDate(),
                                         pos.getUpdatedDate(),
                                         pos.isStatus());

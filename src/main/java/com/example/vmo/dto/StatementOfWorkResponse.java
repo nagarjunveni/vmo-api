@@ -32,6 +32,10 @@ public class StatementOfWorkResponse {
     private ProjectState projectState;
     private String projectStateDisplayName;
 
+    private String projectScope;
+    private String teamsAndConditions;
+    private String assumptionsAndDependencies;
+
     private LineManagerResponse lineManager;
     private LineManagerResponse csxEscalationManager;
     private LineManagerResponse compnovaEscalationManager;
@@ -45,4 +49,7 @@ public class StatementOfWorkResponse {
 
     // List of positions
     private List<StatementOfWorkPositionResponse> positions;
+
+    private List<ActivitiesAndDeliverablesResponse> activities;
+    private List<MilepostResponse> mileposts;
 }

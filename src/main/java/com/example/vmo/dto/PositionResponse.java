@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.example.vmo.enums.PositionType;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,6 +20,7 @@ public class PositionResponse {
     private BigDecimal monthlyRate;
     private String skills;
     private String expertise;
+    private PositionType type;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private boolean status;

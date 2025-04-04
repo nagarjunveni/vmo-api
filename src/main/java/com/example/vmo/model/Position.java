@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.example.vmo.enums.PositionType;
+
 @Entity
 @Table(name = "position")
 @Data
@@ -44,6 +46,10 @@ public class Position {
 
     @Column(name = "updated_date", nullable = false)
     private LocalDateTime updatedDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private PositionType type;
 
     @Column(name = "status", nullable = false)
     private boolean status = true;

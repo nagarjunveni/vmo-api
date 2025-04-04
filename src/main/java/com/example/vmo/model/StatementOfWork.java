@@ -49,6 +49,19 @@ public class StatementOfWork {
     @Enumerated(EnumType.STRING)
     private ProjectState projectState;
 
+    @Column(name = "project_scope", nullable = false)
+    private String projectScope;
+
+    @Column(name = "teams_and_conditions", nullable = false)
+    private String teamsAndConditions;
+
+    @Column(name = "assumptions_and_dependencies", nullable = false)
+    private String assumptionsAndDependencies;
+
+    @Lob
+    @Column(name = "signed_document", columnDefinition = "LONGBLOB")
+    private byte[] signedDocument;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "line_manager_id", nullable = false)
     private LineManager lineManager;

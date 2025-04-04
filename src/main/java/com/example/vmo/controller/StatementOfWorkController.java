@@ -2,6 +2,7 @@ package com.example.vmo.controller;
 
 import com.example.vmo.dto.StatementOfWorkRequest;
 import com.example.vmo.dto.StatementOfWorkResponse;
+import com.example.vmo.dto.StatementOfWorkSummaryResponse;
 import com.example.vmo.service.StatementOfWorkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,16 +19,17 @@ public class StatementOfWorkController {
     private final StatementOfWorkService statementOfWorkService;
 
     /**
-     * Create a new statement of work with positions
+     * Create a new Statement of Work with activities and mileposts
      */
     @PostMapping
-    public ResponseEntity<StatementOfWorkResponse> createStatementOfWork(@RequestBody StatementOfWorkRequest request) {
+    public ResponseEntity<StatementOfWorkResponse> createStatementOfWork(
+            @RequestBody StatementOfWorkRequest request) {
         StatementOfWorkResponse response = statementOfWorkService.createStatementOfWork(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     /**
-     * Update an existing statement of work with positions
+     * Update an existing Statement of Work with activities and mileposts
      */
     @PutMapping("/{id}")
     public ResponseEntity<StatementOfWorkResponse> updateStatementOfWork(
@@ -38,7 +40,7 @@ public class StatementOfWorkController {
     }
 
     /**
-     * Get a statement of work by ID with positions
+     * Get a Statement of Work by ID, including activities and mileposts
      */
     @GetMapping("/{id}")
     public ResponseEntity<StatementOfWorkResponse> getStatementOfWorkById(@PathVariable Long id) {

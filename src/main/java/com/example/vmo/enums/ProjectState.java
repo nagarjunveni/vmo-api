@@ -1,7 +1,7 @@
 package com.example.vmo.enums;
 
 public enum ProjectState {
-    DRAFT("Draft"),
+    NEW("New"),
     PENDING_APPROVAL("Pending Approval"),
     APPROVED("Approved"),
     IN_PROGRESS("In Progress"),

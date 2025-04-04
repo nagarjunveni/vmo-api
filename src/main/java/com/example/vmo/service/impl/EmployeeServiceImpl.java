@@ -5,7 +5,6 @@ import com.example.vmo.dto.EmployeeResponse;
 import com.example.vmo.dto.VendorResponse;
 import com.example.vmo.enums.EmploymentType;
 import com.example.vmo.model.Employee;
-import com.example.vmo.model.Vendor;
 import com.example.vmo.repository.EmployeeRepository;
 import com.example.vmo.repository.VendorRepository;
 import com.example.vmo.service.EmployeeService;

@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
+import com.example.vmo.enums.PositionType;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,5 +18,6 @@ public class PositionRequest {
     private BigDecimal monthlyRate;
     private String skills;
     private String expertise;
+    private PositionType type;
     private Boolean status;
 }

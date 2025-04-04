@@ -27,6 +27,9 @@ public class StatementOfWorkRequest {
     private StatementOfWorkType type;
     private BigDecimal fixedBidAmount;
     private ProjectState projectState;
+    private String projectScope;
+    private String teamsAndConditions;
+    private String assumptionsAndDependencies;
 
     private Long lineManagerId;
     private Long csxEscalationManagerId;
@@ -34,4 +37,6 @@ public class StatementOfWorkRequest {
     private Long authorizedSignatureId;
 
     private List<StatementOfWorkPositionRequest> positions;
+    private List<ActivitiesAndDeliverablesRequest> activities;
+    private List<MilepostRequest> mileposts;
 }

@@ -99,6 +99,10 @@ public class PositionServiceImpl implements PositionService {
         if (request.getExpertise() == null || request.getExpertise().trim().isEmpty()) {
             throw new IllegalArgumentException("Position expertise is required");
         }
+
+        if (request.getType() == null) {
+            throw new IllegalArgumentException("Position type is required");
+        }
     }
 
     private void updatePositionFromRequest(Position position, PositionRequest request) {
@@ -133,6 +137,10 @@ public class PositionServiceImpl implements PositionService {
         if (request.getStatus() != null) {
             position.setStatus(request.getStatus());
         }
+
+        if (request.getType() != null) {
+            position.setType(request.getType());
+        }
     }
 
     private PositionResponse mapToPositionResponse(Position position) {
@@ -145,6 +153,7 @@ public class PositionServiceImpl implements PositionService {
                 position.getMonthlyRate(),
                 position.getSkills(),
                 position.getExpertise(),
+                position.getType(),
                 position.getCreatedDate(),
                 position.getUpdatedDate(),
                 position.isStatus());
